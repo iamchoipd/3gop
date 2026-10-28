@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>2026. 3학년 수학 교실 — 알고리즘 검증판</title>
+<title>2026. 3학년 수학 교실</title>
 <style>
 :root{--bg:#f4f7fb;--ink:#162337;--muted:#66768e;--line:#c8d0dc;--orange:#dc6417;--blue:#1264c4;--green:#087c57}
 *{box-sizing:border-box}
@@ -81,6 +81,19 @@ button:disabled{opacity:.4;cursor:default}
   .answerline{gap:12px}.answerbox{min-width:42px}.workline{width:132px;margin-left:48px}
   .wrap{padding:8px}
 }
+.keyboard-area{padding:10px 0}.keyboard-area label{font-size:13px;display:block;margin-bottom:7px;font-weight:800}.keyboard-row{display:grid;grid-template-columns:minmax(0,1fr) 105px;gap:8px}.keyboard-row input{font-size:21px;padding:13px;border:2px solid #9bb8df}.keyboard-row input:focus{outline:2px solid #1e5da8}.finishStats{margin:8px auto;line-height:1.9;white-space:pre-line}
+
+/* v9: 지금 입력해야 하는 칸 공통 강조. 기존 부분곱/나눗셈 색보다 높은 우선순위 */
+.dcell.todo,.dcell.guide,.qcell.focus,.wdigit.focus,.equation-answer.focus,.answerbox.focus{
+  background:#ffecaa !important; border:3px solid #f09b16 !important;
+  box-shadow:0 0 0 3px rgba(245,158,11,.19),inset 0 0 0 1px rgba(255,255,255,.75);
+  color:#a65300 !important; border-radius:9px;
+}
+.dcell.guide{outline:1px solid rgba(168,85,0,.15)}
+.digitgrid .dcell.todo,.digitgrid .dcell.guide{transform:scale(1.035)}
+@media(prefers-reduced-motion:no-preference){
+ .dcell.todo,.dcell.guide,.qcell.focus,.wdigit.focus,.equation-answer.focus,.answerbox.focus{transition:background .15s,border-color .15s}
+}
 </style>
 </head>
 <body>
@@ -131,7 +144,7 @@ button:disabled{opacity:.4;cursor:default}
     <div class="msg" id="feedback" aria-live="polite">키패드의 숫자나 '비어 있음'을 눌러 각 칸에 답하세요.</div>
     <div id="finish"><h2>🎉 모두 완성!</h2><p id="finishText"></p><button class="primary" id="again">새 게임 시작</button></div>
     <div id="controls">
-      <div class="keypad" id="keypad"></div>
+      <div id="keyboardArea" class="keyboard-area"><label for="keyboardEntry">키보드 입력 <span class="caption">(PC 숫자키 · Enter 확인 · Backspace 삭제)</span></label><div class="keyboard-row"><input id="keyboardEntry" type="text" inputmode="numeric" autocomplete="off" pattern="[0-9]*" placeholder="숫자를 입력하세요"><button id="submitEntry" type="button" class="primary">확인 ↵</button></div></div><div class="keypad" id="keypad"></div>
       <div class="actions" style="margin-top:10px"><button id="back">↶ 한 단계 되돌리기</button><button id="skip">새 문제 ▶</button></div>
     </div>
   </section>
@@ -158,21 +171,27 @@ function makeMul(a,b){
   function addRow(multiplier, rowIndex){
     const shift = rowIndex;
     const rowLabel = rowIndex === 0 ? '첫째 줄' : '둘째 줄';
+    if(rowIndex === 0 && multiplier === 0){
+      push(steps,'mulDigit',0,'첫째 줄의 부분곱을 입력하세요.',{r:0,col:3,hintExpr:`${a} × 0 = ?`});
+      return;
+    }
     if(rowIndex === 1){
       push(steps, 'mulDigit', 0, '둘째 줄의 맨 오른쪽 칸에 0을 입력하세요.', {r:1, col:3, hintExpr:`0`});
     }
-    let value1 = aOne * multiplier;
-    let digit1 = value1 % 10;
-    let carry1 = Math.floor(value1 / 10);
-    push(steps, 'mulDigit', digit1, rowLabel + '의 일의 자리 계산 결과를 입력하세요.', {r:rowIndex, col:3-shift, hintExpr:`${aOne} × ${multiplier} = ?`});
-    push(steps, 'mulCarry', carry1 > 0 ? carry1 : 'EMPTY', rowLabel + '의 첫 번째 올림을 선택하세요. 있으면 숫자, 없으면 비어 있음을 누르세요.', {r:rowIndex, col:2-shift, hintExpr:`${aOne} × ${multiplier}에서 올림은?`});
-    let value2 = aTen * multiplier + carry1;
-    let digit2 = value2 % 10;
-    let carry2 = Math.floor(value2 / 10);
-    push(steps, 'mulDigit', digit2, rowLabel + '의 다음 자리 계산 결과를 입력하세요.', {r:rowIndex, col:2-shift, hintExpr:`${aTen} × ${multiplier}${carry1 ? ' + ' + carry1 : ''} = ?`});
-    push(steps, 'mulCarry', carry2 > 0 ? carry2 : 'EMPTY', rowLabel + '의 두 번째 올림을 선택하세요. 있으면 숫자, 없으면 비어 있음을 누르세요.', {r:rowIndex, col:1-shift, hintExpr:`${aTen} × ${multiplier}${carry1 ? ' + ' + carry1 : ''}에서 올림은?`});
+    // 먼저 받아올림을 결정한 뒤, 곱셈 결과의 해당 자리 숫자를 씁니다.
+    const value1 = aOne * multiplier;
+    const digit1 = value1 % 10;
+    const carry1 = Math.floor(value1 / 10);
+    push(steps, 'mulCarry', carry1 > 0 ? carry1 : 'EMPTY', rowLabel + '의 첫 번째 올림부터 입력하세요. 올림이 없으면 비어 있음을 누르세요.', {r:rowIndex, col:2-shift, hintExpr:`${aOne} × ${multiplier} = ?  →  올림 먼저`});
+    push(steps, 'mulDigit', digit1, rowLabel + '의 일의 자리 숫자를 입력하세요.', {r:rowIndex, col:3-shift, hintExpr:`${aOne} × ${multiplier} = ?  →  일의 자리`});
+    const value2 = aTen * multiplier + carry1;
+    const digit2 = value2 % 10;
+    const carry2 = Math.floor(value2 / 10);
+    // 마지막 자리에서 생긴 십/백 단위는 앞쪽 올림칸에 표시하고, 이후 부분곱에 옮깁니다.
+    push(steps, 'mulCarry', carry2 > 0 ? carry2 : 'EMPTY', rowLabel + '의 두 번째 올림부터 입력하세요. 올림이 없으면 비어 있음을 누르세요.', {r:rowIndex, col:1-shift, hintExpr:`${aTen} × ${multiplier}${carry1 ? ' + ' + carry1 : ''} = ?  →  올림 먼저`});
+    push(steps, 'mulDigit', digit2, rowLabel + '의 다음 자리 숫자를 입력하세요.', {r:rowIndex, col:2-shift, hintExpr:`${aTen} × ${multiplier}${carry1 ? ' + ' + carry1 : ''} = ?  →  해당 자리`});
     if(carry2 > 0){
-      push(steps, 'mulDigit', carry2, rowLabel + '의 맨 앞자리를 입력하세요.', {r:rowIndex, col:1-shift, hintExpr:`남은 수는?`});
+      push(steps, 'mulDigit', carry2, rowLabel + '의 맨 앞자리를 입력하세요.', {r:rowIndex, col:1-shift, hintExpr:'남은 올림을 부분곱 앞자리에 쓰세요.'});
     }
   }
   addRow(bOne, 0);
@@ -217,8 +236,8 @@ function makeDiv(a,b){
     const product = q * b;
     const remain = chunk - product;
     push(steps, 'divQ', q, '현재 만들어진 수를 나누어 몫을 입력하세요.', {qPos, endPos:qPos, len, chunk, hintExpr:`${chunk} ÷ ${b} = ?`});
-    push(steps, 'divProduct', product, '몫과 나누는 수를 곱한 값을 입력하세요.', {qPos, endPos:qPos, len, chunk, hintExpr:`${q} × ${b} = ?`});
-    push(steps, 'divRem', remain, '뺀 결과를 입력하세요.', {qPos, endPos:qPos, len, chunk, hintExpr:`${chunk} - ${product} = ?`});
+    if(q !== 0) push(steps, 'divProduct', product, '몫과 나누는 수를 곱한 값을 입력하세요.', {qPos, endPos:qPos, len, chunk, hintExpr:`${q} × ${b} = ?`});
+    if(q !== 0) push(steps, 'divRem', remain, '뺀 결과를 입력하세요.', {qPos, endPos:qPos, len, chunk, hintExpr:`${chunk} - ${product} = ?`});
     if(qPos < len - 1){
       chunk = remain * 10 + digits[qPos + 1];
       push(steps, 'divBring', digits[qPos+1], '뺀 결과의 오른쪽 칸에 내려온 숫자 한 자리만 입력하세요.', {qPos:qPos+1, endPos:qPos+1, len, chunk, priorRem:remain, hintExpr:'뺀 결과 오른쪽에 다음 자리 내려쓰기'});
@@ -257,7 +276,7 @@ function newQuestion(a,b){
 }
 function contextualError(step){
   const kind = step.kind;
-  if(kind === 'divEmpty' || kind === 'mulCarry' || kind === 'mulSumCarry') return '이 단계에서는 숫자 대신 비어 있음이 맞을 수도 있어요. 다시 생각해 보세요.';
+  if(kind === 'divEmpty' || kind === 'mulCarry' || kind === 'mulSumCarry') return '계산식을 다시 확인하고 올림 숫자 또는 비어 있음을 선택하세요.';
   if(kind === 'divQ') return '지금은 몫을 입력할 차례예요.';
   if(kind === 'divProduct') return '곱한 수가 달라요. 숫자를 다시 입력하세요.';
   if(kind === 'divRem') return '지금은 뺀 결과를 입력할 차례예요.';
@@ -273,7 +292,7 @@ function take(v){
   if(String(v) === step.value){
     game.answers.push(String(v)); game.at++; buffer=''; $('feedback').className='msg good'; $('feedback').textContent = game.at >= game.steps.length ? '✅ 계산을 완성했어요.' : '✅ 맞았어요! 다음 칸으로 이동합니다.';
     if(game.at === game.steps.length){
-      game.completed=true; game.done++; $('controls').style.display='none'; $('finish').style.display='block'; $('finishText').textContent = finishText() + '\n오답 ' + game.localErrors + '회' + (game.session ? ' · ' + game.index + '/' + game.target + '문제' : ''); $('again').textContent = game.session && game.index < game.target ? '다음 문제 ▶' : '새 게임 시작';
+      game.completed=true; game.done++;game.sessionErrors=(game.sessionErrors||0)+game.localErrors; $('controls').style.display='none'; $('finish').style.display='block'; $('finishText').textContent = finishText() + '\n오답 ' + game.localErrors + '회' + (game.session ? ' · ' + game.index + '/' + game.target + '문제' : ''); $('again').textContent = game.session && game.index < game.target ? '다음 문제 ▶' : '새 게임 시작';
     }
     render();
   } else { game.incorrect++; game.localErrors++; $('feedback').className='msg error'; $('feedback').textContent=contextualError(step); render(); }
@@ -301,7 +320,7 @@ function renderMul(){
   const step = game.steps[game.at];
   const part = [Array(4).fill(''), Array(4).fill('')], carries=[Array(4).fill(''), Array(4).fill('')], sum=Array(4).fill(''), sumCarry=Array(4).fill('');
   game.steps.slice(0, game.at).forEach((st, idx) => { const val = mulDisplayValue(game.answers[idx]); if(st.kind==='mulDigit') part[st.r][st.col]=val; if(st.kind==='mulCarry') carries[st.r][st.col]=val; if(st.kind==='mulSum') sum[st.col]=val; if(st.kind==='mulSumCarry') sumCarry[st.col]=val; });
-  const phase = !step ? 'done' : step.kind.startsWith('mulSum') ? 'sum' : step.r === 0 ? 'row1' : 'row2';
+  const phase = !step ? 'done' : (step.kind.startsWith('mulSum') || step.kind==='finalEquation') ? 'sum' : step.r === 0 ? 'row1' : 'row2';
   const formulaClass = phase === 'row1' ? 'orange' : phase === 'row2' ? 'blue' : 'green';
   function activeCarrySource(){ if(phase==='row1') return carries[0]; if(phase==='row2') return carries[1]; if(phase==='sum') return sumCarry; return Array(4).fill(''); }
   function renderCarryLine(){
@@ -343,7 +362,7 @@ function renderMul(){
     }).join('') + '</div>';
   }
   const currentExpr = phase==='row1' ? `${game.a} × ${game.b%10}` : phase==='row2' ? `${game.a} × ${Math.floor(game.b/10)*10}` : '부분곱 더하기';
-  $('board').innerHTML = `<div class="formula ${formulaClass}">${htmlEscape(currentExpr)}</div>${renderCarryLine()}${numberRowTop()}${numberRowBottom()}<div class="divider"></div>${partRow(0)}${partRow(1)}<div class="divider"></div>${sumRow()}<p class="mini">주황: 첫째 줄 · 파랑: 둘째 줄 · 초록: 최종 합 · 이전 줄의 올림은 다음 단계에서 지워집니다.</p>`;
+  $('board').innerHTML = `<div class="formula ${formulaClass}">${htmlEscape(currentExpr)}</div>${renderCarryLine()}${numberRowTop()}${numberRowBottom()}<div class="divider"></div>${partRow(0)}${partRow(1)}<div class="divider"></div>${sumRow()}<p class="mini">주황: 첫째 줄 · 파랑: 둘째 줄 · 초록: 최종 합 · 올림을 먼저 입력한 뒤 아래 숫자를 씁니다.</p>`;
 }
 function divisionDisplayCells(display, endPos, totalLen, showNext=false){
   const cells = Array(3).fill('');
@@ -368,8 +387,6 @@ function renderDiv(){
   const offset = 3 - totalLen;
   const qslots = Array(3).fill('');
   const rows = [];
-  let finalQ = '';
-  let finalR = '';
   let lastRemIndex = -1;
 
   game.steps.slice(0, game.at).forEach((st, idx) => {
@@ -385,8 +402,7 @@ function renderDiv(){
       if(lastRemIndex >= 0){
         rows[lastRemIndex] = {label:'뺀 결과', type:'bring', html:workDigits(String(st.priorRem)+val, st.endPos, st.len, false), endPos:st.endPos, len:st.len};
       }
-    } else if(st.kind==='divFinalQ') finalQ = val;
-    else if(st.kind==='divFinalR') finalR = val;
+    }
   });
 
   if(step){
@@ -409,17 +425,12 @@ function renderDiv(){
       } else {
         rows.push({label:'뺀 결과', type:'bring', html:divisionDisplayCells(typed, step.endPos, step.len, showNext)});
       }
-    } else if(step.kind==='divFinalQ'){
-      finalQ = buffer || '?';
-    } else if(step.kind==='divFinalR'){
-      finalR = buffer || '?';
     }
   }
 
   const qHtml = qslots.map((v,i)=>`<span class="qcell ${step && (step.kind==='divQ' || step.kind==='divEmpty') && offset + step.qPos===i ? 'focus' : ''} ${v==='·' ? 'missing' : ''}">${htmlEscape(v || ' ')}</span>`).join('');
   const dHtml = Array(3).fill('').map((_,i)=>{ const active = step && (step.endPos !== undefined) && (offset + step.endPos===i) && ['divQ','divEmpty','divProduct','divRem','divBring'].includes(step.kind); return `<span class="digit ${active ? 'part2' : ''}">${htmlEscape(digits[i-offset] || ' ')}</span>`; }).join('');
   const rowsHtml = rows.map(row => row.rule ? '<div class="workline"></div>' : `<div class="workrow ${row.type}"><span class="label">${row.label}</span><span class="minus">${row.type==='product' ? '−' : ''}</span>${row.html}</div>`).join('');
-  const answerHtml = `<div class="answerline"><span class="answerfield">몫: <span class="answerbox ${step && step.kind==='divFinalQ' ? 'focus' : ''}">${htmlEscape(finalQ || ' ')}</span></span><span class="answerfield">나머지: <span class="answerbox ${step && step.kind==='divFinalR' ? 'focus' : ''}">${htmlEscape(finalR || ' ')}</span></span></div>`;
   let info='몫 → 곱한 수 → 뺀 결과 → 다음 숫자 이어쓰기 순서로 진행합니다.';
   if(step && step.kind==='divEmpty') info='처음 자리에서 나눌 수 없으면 비어 있음을 선택하세요.';
   if(step && step.kind==='divQ') info='현재 만들어진 수를 나누는 식을 생각해 보세요.';
@@ -440,20 +451,87 @@ function render(){
   $('question').innerHTML = `<div class="equation"><span>${game.a} ${game.mode==='mul'?'×':'÷'} ${game.b} =</span><span class="equation-answer ${step?.kind==='finalEquation'?'focus':''}">${htmlEscape(eq || '　')}</span>${game.mode!=='mul'?`<span>나머지</span><span class="equation-answer ${step?.kind==='finalRemainder'?'focus':''}">${htmlEscape(rem || '　')}</span>`:''}</div><div class="equation-note">계산이 끝나면 등호 뒤의 답을 직접 입력하세요.</div>`;
   const hint = $('hint');
   hint.innerHTML = step ? `<div style="font-size:18px;font-weight:900;margin-bottom:4px">${htmlEscape(step.hintExpr || step.label)}</div><div style="font-size:14px;font-weight:700">${htmlEscape(step.label)}</div>` : '계산을 완료했습니다!';
-  hint.className = 'explain ' + (game.mode==='mul' ? (step && step.kind.startsWith('mulSum') ? 'green' : step && step.r===1 ? '' : 'orange') : '');
+  hint.className = 'explain ' + (game.mode==='mul' ? (step && (step.kind.startsWith('mulSum') || step.kind==='finalEquation') ? 'green' : step && step.r===1 ? '' : 'orange') : '');
   if(game.mode==='mul') renderMul(); else renderDiv();
   const canEmpty = !!step && ['divEmpty','mulCarry','mulSumCarry'].includes(step.kind);
+  const key = $('keypad');
   const keys = [1,2,3,4,5,6,7,8,9,'비어 있음',0,'⌫'];
-  $('keypad').innerHTML = keys.map(v => `<button data-v="${v}" class="${typeof v==='string' ? 'special' : ''}" ${v==='비어 있음' && !canEmpty ? 'disabled' : ''}>${v}</button>`).join('');
-  document.querySelectorAll('#keypad button').forEach(btn => btn.onclick = () => { const v = btn.dataset.v; if(v==='⌫') return undo(); if(v==='비어 있음') return take('EMPTY'); if(step && ['divProduct','divRem','divBring','divFinalQ','divFinalR','finalEquation','finalRemainder'].includes(step.kind)) return digitBuffer(v); take(v); });
+  key.innerHTML = keys.map(v=>`<button data-v="${v}" class="${typeof v==='string'?'special':''}" ${v==='비어 있음'&&!canEmpty?'disabled':''}>${v}</button>`).join('');
+  key.querySelectorAll('button').forEach(btn=>btn.onclick=()=>{const v=btn.dataset.v;if(v==='⌫')return undo();if(v==='비어 있음')return take('EMPTY');inputDigit(v)});
+  const typing = $('keyboardEntry');
+  const isLong = !!step && ['divProduct','divRem','divBring','finalEquation','finalRemainder'].includes(step.kind);
+  typing.placeholder = isLong ? '답을 쓰고 확인을 누르세요' : (canEmpty ? '0 = 비어 있음' : '한 자리 입력');
+  typing.value = buffer;
+  $('submitEntry').disabled = !step;
+
 }
-function digitBuffer(v){ if(!game || game.completed) return; const step = game.steps[game.at]; if(!step || !['divProduct','divRem','divBring','divFinalQ','divFinalR','finalEquation','finalRemainder'].includes(step.kind)) return; buffer += String(v); const need = ['divFinalQ','divFinalR'].includes(step.kind) ? step.len : step.value.length; if(buffer.length < need){ $('feedback').className='msg'; $('feedback').textContent='입력 중: ' + buffer + ' (' + buffer.length + '/' + need + '자리)'; if(step.kind==='finalEquation'||step.kind==='finalRemainder') render(); else renderDiv(); return; } const value=buffer; buffer=''; take(value); }
-function undo(){ if(!game) return; if(buffer){ buffer=buffer.slice(0,-1); $('feedback').className='msg'; $('feedback').textContent='입력 중: ' + (buffer || '없음'); if(game.steps[game.at]?.kind==='finalEquation'||game.steps[game.at]?.kind==='finalRemainder')render();else if(game.mode!=='mul')renderDiv(); return; } if(game.at>0 && !game.completed){ game.at--; game.answers.pop(); $('feedback').className='msg'; $('feedback').textContent='직전 칸으로 돌아왔습니다.'; render(); } }
+function isLongStep(step){return !!step && ['divProduct','divRem','divBring','finalEquation','finalRemainder'].includes(step.kind)}
+function inputDigit(v){
+ if(!game||game.completed)return;
+ const st=game.steps[game.at];
+ // In optional/empty judgement slots, the keyboard 0 means '비어 있음'.
+ // Elsewhere 0 remains the actual digit zero (including quotient zero).
+ if(String(v)==='0' && ['mulCarry','mulSumCarry','divEmpty'].includes(st?.kind))return take('EMPTY');
+ if(isLongStep(st)){
+   buffer+=String(v);
+   $('keyboardEntry').value=buffer;
+   if(st.kind==='finalEquation'||st.kind==='finalRemainder')render();
+   else if(game.mode!=='mul')renderDiv();
+ }else take(v);
+}
+function submitEntry(){
+ if(!game||game.completed)return;
+ const step=game.steps[game.at];
+ const input=$('keyboardEntry');
+ let v=(input.value||'').trim();
+ if(isLongStep(step))v=v||buffer;
+ if(v==='0' && ['mulCarry','mulSumCarry','divEmpty'].includes(step?.kind)){input.value='';buffer='';take('EMPTY');return;}
+ if(!/^[0-9]+$/.test(v)){ $('feedback').className='msg error';$('feedback').textContent='숫자를 입력해 주세요.';return; }
+ // Student chooses when to submit a multi-digit answer, without seeing its required length.
+ if(isLongStep(step)){
+   buffer=v;
+   if(v===step.value){take(v)}
+   else {game.incorrect++;game.localErrors++;$('feedback').className='msg error';$('feedback').textContent=contextualError(step);buffer='';input.value='';render();}
+ }else{input.value='';take(v)}
+}
+function undo(){
+ if(!game||game.completed)return;
+ const input=$('keyboardEntry');
+ if(input.value||buffer){buffer=(input.value||buffer).slice(0,-1);input.value=buffer;render();return;}
+ if(game.at>0){game.at--;game.answers.pop();buffer='';$('feedback').className='msg';$('feedback').textContent='직전 단계로 돌아왔습니다.';render()}
+}
+$('keyboardEntry').addEventListener('input',()=>{
+ if(!game||game.completed)return;
+ const el=$('keyboardEntry');
+ const clean=el.value.replace(/[^0-9]/g,'');
+ el.value=clean;buffer=clean;
+ const step=game.steps[game.at];
+ if(step && (step.kind==='finalEquation'||step.kind==='finalRemainder'))renderEquationOnly();
+ else if(game.mode!=='mul' && isLongStep(step))renderDiv();
+});
+function renderEquationOnly(){
+ const step=game.steps[game.at];
+ const ans=$('question').querySelectorAll('.equation-answer');
+ if(step?.kind==='finalEquation'&&ans[0])ans[0].textContent=buffer||'　';
+ if(step?.kind==='finalRemainder'&&ans[1])ans[1].textContent=buffer||'　';
+}
+$('keyboardEntry').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();submitEntry()}});
+$('submitEntry').onclick=submitEntry;
+// Physical keyboard digits work without clicking the entry first; selected input and settings retain native typing.
+document.addEventListener('keydown',e=>{
+ if(!game||game.completed)return;
+ const t=e.target;
+ if(t && ['INPUT','SELECT','TEXTAREA'].includes(t.tagName))return;
+ if(/^[0-9]$/.test(e.key)){e.preventDefault();inputDigit(e.key)}
+ else if(e.key==='Backspace'){e.preventDefault();undo()}
+ else if(e.key==='Enter'){e.preventDefault();submitEntry()}
+ else if(e.key.toLowerCase()==='e' && ['mulCarry','mulSumCarry','divEmpty'].includes(game.steps[game.at]?.kind)){e.preventDefault();take('EMPTY')}
+});
 function nextGame(){ if(!game) return; if(game.session && game.index < game.target){ game.index++; const [a,b] = randomProblem(game.mode); newQuestion(a,b); } else { const [a,b] = randomProblem(game.mode); start(game.mode,a,b,true); } }
 $('random').onclick = () => { const mode=$('mode').value, [a,b]=randomProblem(mode); start(mode,a,b,true); };
-$('sample').onchange = () => { const v=$('sample').value; if(!v) return; const [a,b,mode]=v.split(','); $('mode').value=mode; start(mode,+a,+b,false); };
+$('sample').onchange = () => { const v=$('sample').value; if(!v) return; const [a,b,mode]=v.split(','); $('mode').value=mode; start(mode,+a,+b,false); $('sample').selectedIndex=0; };
 $('custom').onclick = () => start($('mode').value, +$('a').value, +$('b').value, false);
-$('back').onclick = undo; $('skip').onclick = () => { if(!game) return; const [a,b]=randomProblem(game.mode); if(game.session) game.index=Math.min(game.index+1, game.target); newQuestion(a,b); }; $('again').onclick = nextGame;
+$('back').onclick = undo; $('skip').onclick = () => { if(!game) return; const [a,b]=randomProblem(game.mode); if(game.session){if(game.index>=game.target){$('feedback').textContent='마지막 문제입니다. 새 게임을 시작해 주세요.';return;}game.index++} newQuestion(a,b); }; $('again').onclick = nextGame;
 start('mul', 17, 26, false);
 
 </script>
