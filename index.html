@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>2026. 3학년 수학 교실</title>
+<title>2026. 3학년 수학 교실 | 모바일</title>
 <style>
 :root{--bg:#f4f7fb;--ink:#162337;--muted:#66768e;--line:#c8d0dc;--orange:#dc6417;--blue:#1264c4;--green:#087c57}
 *{box-sizing:border-box}
@@ -94,12 +94,27 @@ button:disabled{opacity:.4;cursor:default}
 @media(prefers-reduced-motion:no-preference){
  .dcell.todo,.dcell.guide,.qcell.focus,.wdigit.focus,.equation-answer.focus,.answerbox.focus{transition:background .15s,border-color .15s}
 }
+
+.character-box{display:flex;gap:14px;align-items:center;margin:13px 0 5px;padding:13px;background:linear-gradient(110deg,#ecfdf5,#eef5ff);border:1px solid #a7dfc8;border-radius:14px}
+.character-icon{font-size:43px;width:58px;text-align:center;line-height:1.2}.character-body{flex:1;min-width:0}.character-body strong{display:block;color:#126247;font-size:17px}.character-body small{color:#42685b}
+.char-track{height:11px;background:#d6e7dd;border-radius:12px;overflow:hidden;margin:8px 0}.char-fill{height:100%;width:0;background:linear-gradient(90deg,#34c17c,#168cce);border-radius:12px;transition:width .35s}
+.coupon-highlight{display:inline-flex;align-items:center;justify-content:center;border:2px solid #efab24;background:#fff4cb;color:#8b4605;padding:12px 10px;border-radius:12px;font-size:16px;font-weight:900;box-shadow:0 2px 8px #e5a32126;min-width:135px}
+.coupon-highlight.has-coupon{background:#ffe6a2;border-color:#ea8c08;animation:couponPulse 1.8s ease-in-out infinite alternate}
+@keyframes couponPulse{to{box-shadow:0 0 0 4px #facc1545}}
+@media(prefers-reduced-motion:reduce){.coupon-highlight.has-coupon{animation:none}}
+
+body{overscroll-behavior-y:contain}.wrap{padding-bottom:max(30px,env(safe-area-inset-bottom))}
+.keypad button{min-height:58px}.panel{overflow:hidden}
+@media(max-width:400px){.panel{padding:10px}.equation{font-size:19px}}
 </style>
 </head>
 <body>
 <main class="wrap">
+
+<section class="panel" id="profilePanel"><div class="row"><strong id="profileName"></strong><span id="profileXP">0 XP</span><span id="profilePoints">0 P</span></div><div class="character-box"><span class="character-icon" id="characterIcon">🥚</span><div class="character-body"><strong id="characterTitle">알에서 깨어나는 중</strong><div class="char-track"><div id="characterProgress" class="char-fill"></div></div><small id="characterNext">학습을 통해 성장시켜요!</small></div></div><div class="row" style="margin-top:8px"><span id="profileCoupons" class="coupon-highlight">오늘도 수학 도전!</span><button id="resetStats" type="button">기록 초기화</button></div></section>
+<div id="studyApp">
   <h1>🧮 2026. 3학년 수학 교실</h1>
-  <div class="sub">알고리즘 검증판 · 로그인/포인트 없이 바로 실행</div>
+  <div class="sub">모바일 혼자 연습 · 기기별 학습 기록</div>
 
   <section class="panel">
     <div class="row">
@@ -114,26 +129,8 @@ button:disabled{opacity:.4;cursor:default}
         <select id="count"><option>5</option><option selected>10</option><option>15</option><option>20</option></select>
       </label>
     </div>
-    <div class="row" style="margin-top:10px">
-      <button id="random" class="primary">무작위 게임 시작</button>
-      <select id="sample" aria-label="검증 예제">
-        <option value="">예제 선택</option>
-        <option value="17,26,mul">17 × 26 (올림)</option>
-        <option value="78,96,mul">78 × 96 (복수 올림)</option>
-        <option value="12,23,mul">12 × 23 (올림 없음)</option>
-        <option value="256,4,div3">256 ÷ 4 (처음 비어 있음)</option>
-        <option value="612,3,div3">612 ÷ 3 (몫의 0)</option>
-        <option value="457,4,div3">457 ÷ 4 (나머지)</option>
-        <option value="73,6,div2">73 ÷ 6 (나머지)</option><option value="17,7,div2">17 ÷ 7 (두 자리 곱한 수)</option>
-        <option value="24,6,div2">24 ÷ 6 (처음 비어 있음)</option>
-      </select>
-    </div>
-    <div class="row" style="margin-top:8px">
-      <input id="a" type="number" placeholder="앞 수" inputmode="numeric">
-      <input id="b" type="number" placeholder="뒤 수" inputmode="numeric">
-      <button id="custom">직접 출제</button>
-    </div>
-    <p class="caption">예제 선택이나 직접 출제를 이용하면 원하는 계산을 반복 검증할 수 있습니다.</p>
+    <div class="row" style="margin-top:10px"><button id="random" class="primary">학습 시작</button></div>
+    <p class="caption">문제는 서버에서 출제되며 완료할 때마다 1XP와 10P를 받습니다.</p>
   </section>
 
   <section class="panel" id="game">
@@ -149,8 +146,8 @@ button:disabled{opacity:.4;cursor:default}
     </div>
   </section>
 
-  <div class="footer">검증판 규칙: 매 입력을 즉시 검사하며 틀려도 다시 시도할 수 있습니다. 실제 학생 보상 및 교사용 기록은 연결되지 않습니다. 정답 판별과 화면 배치를 시험하기 위한 독립 HTML 파일입니다.</div>
-</main>
+  <div class="footer">선생님이 발급한 학생번호와 PIN으로 로그인합니다. 한 문제를 끝까지 풀어야 보상이 지급됩니다. 포인트 100P로 하루 한 번 간식 쿠폰을 교환할 수 있습니다.</div>
+</div></main>
 
 <script>
 
@@ -237,10 +234,10 @@ function makeDiv(a,b){
     const remain = chunk - product;
     push(steps, 'divQ', q, '현재 만들어진 수를 나누어 몫을 입력하세요.', {qPos, endPos:qPos, len, chunk, hintExpr:`${chunk} ÷ ${b} = ?`});
     if(q !== 0) push(steps, 'divProduct', product, '몫과 나누는 수를 곱한 값을 입력하세요.', {qPos, endPos:qPos, len, chunk, hintExpr:`${q} × ${b} = ?`});
-    if(q !== 0) push(steps, 'divRem', remain, '뺀 결과를 입력하세요.', {qPos, endPos:qPos, len, chunk, hintExpr:`${chunk} - ${product} = ?`});
+    if(qPos === len - 1) push(steps, 'divRem', remain, '마지막 나머지를 입력하세요.', {qPos, endPos:qPos, len, chunk, hintExpr:`${chunk} - ${product} = ?`});
     if(qPos < len - 1){
       chunk = remain * 10 + digits[qPos + 1];
-      push(steps, 'divBring', digits[qPos+1], '뺀 결과의 오른쪽 칸에 내려온 숫자 한 자리만 입력하세요.', {qPos:qPos+1, endPos:qPos+1, len, chunk, priorRem:remain, hintExpr:'뺀 결과 오른쪽에 다음 자리 내려쓰기'});
+      push(steps, 'divBring', q === 0 ? digits[qPos+1] : chunk, q === 0 ? '기존 숫자 옆에 다음 숫자 한 자리만 이어 쓰세요.' : '내려쓴 수 전체를 직접 입력하세요.', {qPos:qPos+1, endPos:qPos+1, len, chunk, priorRem:remain, skipZero:remain === 0, mergeZero: q === 0, hintExpr:q === 0 ? '다음 숫자를 오른쪽에 이어 쓰세요.' : '내려쓴 수 전체를 계산해 쓰세요.'});
     }
   }
   const quotient = Math.floor(a/b);
@@ -292,28 +289,27 @@ function take(v){
   if(String(v) === step.value){
     game.answers.push(String(v)); game.at++; buffer=''; $('feedback').className='msg good'; $('feedback').textContent = game.at >= game.steps.length ? '✅ 계산을 완성했어요.' : '✅ 맞았어요! 다음 칸으로 이동합니다.';
     if(game.at === game.steps.length){
-      game.completed=true; game.done++;game.sessionErrors=(game.sessionErrors||0)+game.localErrors; $('controls').style.display='none'; $('finish').style.display='block'; $('finishText').textContent = finishText() + '\n오답 ' + game.localErrors + '회' + (game.session ? ' · ' + game.index + '/' + game.target + '문제' : ''); $('again').textContent = game.session && game.index < game.target ? '다음 문제 ▶' : '새 게임 시작';
+      game.completed=true; game.done++;game.sessionErrors=(game.sessionErrors||0)+game.localErrors; $('controls').style.display='none'; $('finish').style.display='block'; $('finishText').textContent = finishText() + '\n오답 ' + game.localErrors + '회' + (game.session ? ' · ' + game.index + '/' + game.target + '문제' : '');rewardForCurrentProblem();
     }
     render();
   } else { game.incorrect++; game.localErrors++; $('feedback').className='msg error'; $('feedback').textContent=contextualError(step); render(); }
 }
 function cell(value, cls='', small=false){ return `<div class="dcell ${small ? 'small ' : ''}${cls}">${value === null || value === undefined || value === '' ? '&nbsp;' : htmlEscape(value)}</div>`; }
 function workDigits(value, endPos, totalLen, focus){
-  const cells = Array(3).fill(''); const s = String(value); const offset = 3 - totalLen; const endCol = offset + endPos;
+  // 세로셈에서 실제로 써야 하는 자릿수만 표시한다.
+  // 아직 입력하지 않은 다른 자리에 미리 '?'를 그리지 않는다.
+  const cells = Array(3).fill('');
+  const offset = 3 - totalLen, endCol = offset + endPos;
   const step = focus && game ? game.steps[game.at] : null;
-  const width = step ? step.value.length : s.length;
+  const typed = focus ? buffer : String(value);
+  const width = focus ? step.value.length : typed.length;
   const start = endCol - width + 1;
-  if(focus){
-    // Show each typed digit immediately, left to right, without revealing the answer.
-    for(let i=0; i<buffer.length; i++) if(start+i>=0 && start+i<3) cells[start+i]=buffer[i];
-  } else {
-    for(let i=0; i<s.length; i++) if(endCol-s.length+1+i>=0 && endCol-s.length+1+i<3) cells[endCol-s.length+1+i]=s[i];
+  for(let i=0; i<typed.length; i++){
+    const pos=start+i;
+    if(pos>=0 && pos<3) cells[pos]=typed[i];
   }
-  return cells.map((n,i)=>{
-    const isEntry=focus && i>=start && i<=endCol;
-    const isNext=focus && i===start+buffer.length;
-    return `<span class="wdigit ${isEntry ? 'focus' : ''}">${htmlEscape(n || (isNext?'?':' '))}</span>`;
-  }).join('');
+  const active = focus && typed.length < width ? start + typed.length : -1;
+  return cells.map((n,i)=>`<span class="wdigit ${focus && i===active ? 'focus' : ''}">${htmlEscape(n || ' ')}</span>`).join('');
 }
 function mulDisplayValue(ans){ return ans === 'EMPTY' ? '·' : ans; }
 function renderMul(){
@@ -365,80 +361,69 @@ function renderMul(){
   $('board').innerHTML = `<div class="formula ${formulaClass}">${htmlEscape(currentExpr)}</div>${renderCarryLine()}${numberRowTop()}${numberRowBottom()}<div class="divider"></div>${partRow(0)}${partRow(1)}<div class="divider"></div>${sumRow()}<p class="mini">주황: 첫째 줄 · 파랑: 둘째 줄 · 초록: 최종 합 · 올림을 먼저 입력한 뒤 아래 숫자를 씁니다.</p>`;
 }
 function divisionDisplayCells(display, endPos, totalLen, showNext=false){
-  const cells = Array(3).fill('');
-  const s = String(display);
-  const offset = 3 - totalLen;
-  const endCol = offset + endPos;
-  const start = showNext ? endCol - s.length : endCol - s.length + 1;
+  const cells=Array(3).fill('');
+  const s=String(display);
+  const endCol=3-totalLen+endPos;
+  const start=endCol-s.length+1-(showNext?1:0);
   for(let i=0;i<s.length;i++){
-    const col = start + i;
-    if(col>=0 && col<3) cells[col] = s[i];
+    const pos=start+i;
+    if(pos>=0 && pos<3)cells[pos]=s[i];
   }
-  if(showNext){
-    const next = endCol;
-    if(next>=0 && next<3 && !cells[next]) cells[next] = '?';
-  }
-  return cells.map((n,i)=>`<span class="wdigit ${(showNext && n==='?') ? 'focus' : ''}">${htmlEscape(n || ' ')}</span>`).join('');
+  // 내려쓸 위치만 강조한다. 입력할 필요가 없는 칸에는 ?를 두지 않는다.
+  return cells.map((n,i)=>`<span class="wdigit ${showNext && i===endCol ? 'focus' : ''}">${htmlEscape(n || ' ')}</span>`).join('');
 }
 function renderDiv(){
-  const step = game.steps[game.at];
-  const digits = String(game.a).split('');
-  const totalLen = digits.length;
-  const offset = 3 - totalLen;
-  const qslots = Array(3).fill('');
-  const rows = [];
-  let lastRemIndex = -1;
-
-  game.steps.slice(0, game.at).forEach((st, idx) => {
-    const val = game.answers[idx] === 'EMPTY' ? '·' : game.answers[idx];
-    if(st.kind==='divQ' || st.kind==='divEmpty') qslots[offset + st.qPos] = val;
+  const step=game.steps[game.at];
+  const digits=String(game.a).split('');
+  const len=digits.length,offset=3-len;
+  const qs=Array(3).fill('');
+  const rows=[];
+  let activeRow=-1;
+  const makeRow=(label,type,txt,endPos,width,focus=false)=>({label,type,html:workDigits(txt,endPos,width,focus)});
+  // Build a single continuous long-division work area from accepted steps.
+  game.steps.slice(0,game.at).forEach((st,i)=>{
+    const val=game.answers[i]==='EMPTY'?'·':game.answers[i];
+    if(st.kind==='divQ'||st.kind==='divEmpty')qs[offset+st.qPos]=val;
     else if(st.kind==='divProduct'){
-      rows.push({label:'곱한 수', type:'product', html:workDigits(val, st.endPos, st.len, false)});
+      rows.push(makeRow('곱한 수','product',val,st.endPos,st.len));
       rows.push({rule:true});
     } else if(st.kind==='divRem'){
-      rows.push({label:'뺀 결과', type:'remaining', html:workDigits(val, st.endPos, st.len, false), rem:String(val), endPos:st.endPos, len:st.len});
-      lastRemIndex = rows.length - 1;
+      rows.push(makeRow('뺀 결과','remaining',val,st.endPos,st.len));
+      activeRow=rows.length-1;
     } else if(st.kind==='divBring'){
-      if(lastRemIndex >= 0){
-        rows[lastRemIndex] = {label:'뺀 결과', type:'bring', html:workDigits(String(st.priorRem)+val, st.endPos, st.len, false), endPos:st.endPos, len:st.len};
+      const value=st.mergeZero?String(st.priorRem)+val:String(val);
+      if(st.mergeZero && activeRow>=0){
+        // 몫이 0이면 이전에 내려쓴 숫자와 한 줄로 합쳐서 보여준다.
+        rows[activeRow]=makeRow('내려쓴 수','bring',value,st.endPos,st.len);
+      }else{
+        // 중간 뺄 결과를 별도 확인하지 않고 새 수 한 줄만 보여준다.
+        rows.push(makeRow('내려쓴 수','bring',value,st.endPos,st.len));
+        activeRow=rows.length-1;
       }
     }
   });
-
   if(step){
-    if(step.kind==='divQ' || step.kind==='divEmpty'){
-      qslots[offset + step.qPos] = '?';
-    } else if(step.kind==='divProduct'){
-      const display = buffer || '?';
-      rows.push({label:'곱한 수', type:'product', html:workDigits(display, step.endPos, step.len, true, buffer)});
+    if(step.kind==='divQ'||step.kind==='divEmpty')qs[offset+step.qPos]='?';
+    else if(step.kind==='divProduct'){
+      rows.push(makeRow('곱한 수','product',buffer,step.endPos,step.len,true));
       rows.push({rule:true});
     } else if(step.kind==='divRem'){
-      const display = buffer || '?';
-      rows.push({label:'뺀 결과', type:'remaining', html:workDigits(display, step.endPos, step.len, true, buffer)});
-      lastRemIndex = rows.length - 1;
+      rows.push(makeRow('뺀 결과','remaining',buffer,step.endPos,step.len,true));
     } else if(step.kind==='divBring'){
-      const prevRem = String(step.priorRem);
-      const typed = prevRem + buffer;
-      const showNext = buffer.length === 0;
-      if(lastRemIndex >= 0){
-        rows[lastRemIndex] = {label:'뺀 결과', type:'bring', html:divisionDisplayCells(typed, step.endPos, step.len, showNext)};
-      } else {
-        rows.push({label:'뺀 결과', type:'bring', html:divisionDisplayCells(typed, step.endPos, step.len, showNext)});
-      }
+      const prev=step.mergeZero?String(step.priorRem):'';
+      const typed=prev+buffer;
+      const html=step.mergeZero ? divisionDisplayCells(typed,step.endPos,step.len,buffer.length===0) : workDigits(buffer,step.endPos,step.len,true);
+      if(step.mergeZero&&activeRow>=0){
+        rows[activeRow]={label:'내려쓴 수',type:'bring',html};
+      }else rows.push({label:'내려쓴 수',type:'bring',html});
     }
   }
-
-  const qHtml = qslots.map((v,i)=>`<span class="qcell ${step && (step.kind==='divQ' || step.kind==='divEmpty') && offset + step.qPos===i ? 'focus' : ''} ${v==='·' ? 'missing' : ''}">${htmlEscape(v || ' ')}</span>`).join('');
-  const dHtml = Array(3).fill('').map((_,i)=>{ const active = step && (step.endPos !== undefined) && (offset + step.endPos===i) && ['divQ','divEmpty','divProduct','divRem','divBring'].includes(step.kind); return `<span class="digit ${active ? 'part2' : ''}">${htmlEscape(digits[i-offset] || ' ')}</span>`; }).join('');
-  const rowsHtml = rows.map(row => row.rule ? '<div class="workline"></div>' : `<div class="workrow ${row.type}"><span class="label">${row.label}</span><span class="minus">${row.type==='product' ? '−' : ''}</span>${row.html}</div>`).join('');
-  let info='몫 → 곱한 수 → 뺀 결과 → 다음 숫자 이어쓰기 순서로 진행합니다.';
-  if(step && step.kind==='divEmpty') info='처음 자리에서 나눌 수 없으면 비어 있음을 선택하세요.';
-  if(step && step.kind==='divQ') info='현재 만들어진 수를 나누는 식을 생각해 보세요.';
-  if(step && step.kind==='divBring') info='뺀 결과가 나누는 수보다 작은지 확인하고, 오른쪽에 다음 숫자 한 자리만 입력하세요.';
-  if(step && step.kind==='divFinalQ') info='세로셈이 끝났다면 가로식 옆의 몫을 정리합니다.';
-  if(step && step.kind==='divFinalR') info='이제 나머지를 정리합니다.';
-  $('board').innerHTML = `<div class="longwrap"><div class="longdiv"><div class="qrow"><span></span><span></span>${qHtml}</div><div class="base"><div class="divisor">${game.b}</div><div class="bracket"><div class="leftbar"></div><div class="topbar"></div><div class="dividendRow">${dHtml}</div></div></div><div class="work">${rowsHtml}</div></div></div><div class="info">${info}</div>`;
+  const qHtml=qs.map((v,i)=>`<span class="qcell ${step&&['divQ','divEmpty'].includes(step.kind)&&offset+step.qPos===i?'focus':''} ${v==='·'?'missing':''}">${htmlEscape(v||' ')}</span>`).join('');
+  const dividend=Array(3).fill('').map((_,i)=>`<span class="digit">${htmlEscape(digits[i-offset]||' ')}</span>`).join('');
+  const html=rows.map(r=>r.rule?'<div class="workline"></div>':`<div class="workrow ${r.type}"><span class="label">${r.label}</span><span class="minus">${r.type==='product'?'−':''}</span>${r.html}</div>`).join('');
+  $('board').innerHTML=`<div class="longwrap"><div class="longdiv"><div class="qrow"><span></span><span></span>${qHtml}</div><div class="base"><div class="divisor">${game.b}</div><div class="bracket"><div class="leftbar"></div><div class="topbar"></div><div class="dividendRow">${dividend}</div></div></div><div class="work">${html}</div></div></div>`;
 }
+
 function render(){
   if(!game) return; const step = game.steps[game.at];
   $('progress').textContent = (game.mode==='mul' ? '곱셈' : game.mode==='div2' ? '두 자리 나눗셈' : '세 자리 나눗셈') + ' · ' + game.index + '/' + game.target + '문제 · 단계 ' + Math.min(game.at+1, game.steps.length) + '/' + game.steps.length;
@@ -528,11 +513,55 @@ document.addEventListener('keydown',e=>{
  else if(e.key.toLowerCase()==='e' && ['mulCarry','mulSumCarry','divEmpty'].includes(game.steps[game.at]?.kind)){e.preventDefault();take('EMPTY')}
 });
 function nextGame(){ if(!game) return; if(game.session && game.index < game.target){ game.index++; const [a,b] = randomProblem(game.mode); newQuestion(a,b); } else { const [a,b] = randomProblem(game.mode); start(game.mode,a,b,true); } }
-$('random').onclick = () => { const mode=$('mode').value, [a,b]=randomProblem(mode); start(mode,a,b,true); };
-$('sample').onchange = () => { const v=$('sample').value; if(!v) return; const [a,b,mode]=v.split(','); $('mode').value=mode; start(mode,+a,+b,false); $('sample').selectedIndex=0; };
-$('custom').onclick = () => start($('mode').value, +$('a').value, +$('b').value, false);
-$('back').onclick = undo; $('skip').onclick = () => { if(!game) return; const [a,b]=randomProblem(game.mode); if(game.session){if(game.index>=game.target){$('feedback').textContent='마지막 문제입니다. 새 게임을 시작해 주세요.';return;}game.index++} newQuestion(a,b); }; $('again').onclick = nextGame;
-start('mul', 17, 26, false);
+$('random').onclick=()=>requestProblem(true);
+$('back').onclick=undo;
+$('skip').onclick=()=>requestProblem(false);
+$('again').onclick=()=>requestProblem(false);
+// GitHub Pages용: 데이터는 이 브라우저에만 저장됩니다. 학생 로그인/실물 쿠폰 기능은 없습니다.
+const SAVE_KEY='grade3_math_mobile_v1';
+let stats={xp:0,completed:0,mistakes:0};
+try { const saved=JSON.parse(localStorage.getItem(SAVE_KEY)||'null'); if(saved && typeof saved==='object') stats={xp:Math.max(0,Number(saved.xp)||0),completed:Math.max(0,Number(saved.completed)||0),mistakes:Math.max(0,Number(saved.mistakes)||0)}; } catch(e){}
+let pendingNext=null;
+function saveStats(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(stats));}catch(e){}}
+function updateProfile(){
+ const p={xp:stats.xp,level:Math.floor(stats.xp/100)+1};
+ $('profileName').textContent='나의 수학 친구 · Lv.'+p.level;
+ $('profileXP').textContent=p.xp+' XP';
+ $('profilePoints').textContent=stats.completed+'문제 완료';
+ $('profileCoupons').textContent='🌟 누적 '+stats.completed+'문제 · 실수 '+stats.mistakes+'회';
+ $('profileCoupons').classList.remove('has-coupon');
+ const milestones=[{xp:0,icon:'🥚',title:'새로운 알'},{xp:10,icon:'🐣',title:'아기 수학 친구'},{xp:30,icon:'🐥',title:'호기심 친구'},{xp:60,icon:'🐤',title:'튼튼한 친구'},{xp:100,icon:'🦉',title:'수학 박사'},{xp:200,icon:'🐉',title:'수학 용사'}];
+ const idx=milestones.reduce((acc,x,i)=>p.xp>=x.xp?i:acc,0),current=milestones[idx],next=milestones[idx+1];
+ $('characterIcon').textContent=current.icon;$('characterTitle').textContent=current.title+' · Lv.'+p.level;
+ $('characterProgress').style.width=next?Math.min(100,Math.floor(100*(p.xp-current.xp)/(next.xp-current.xp)))+'%':'100%';
+ $('characterNext').textContent=next?'다음 성장까지 '+(next.xp-p.xp)+' XP':'최고 단계 달성!';
+}
+function requestProblem(reset){
+ if(pendingNext){clearTimeout(pendingNext);pendingNext=null;}
+ let mode=$('mode').value;
+ const wanted=Math.max(5,Math.min(20,Number($('count').value)||10));
+ if(reset||!game||game.index>=game.target||game.mode!==mode){
+   const [a,b]=randomProblem(mode); start(mode,a,b,true);
+ }else{
+   const index=game.index+1, target=game.target;
+   const [a,b]=randomProblem(mode); start(mode,a,b,true);game.index=index;game.target=target;render();
+ }
+}
+function rewardForCurrentProblem(){
+ stats.xp+=1;stats.completed+=1;stats.mistakes+=game.localErrors;saveStats();updateProfile();
+ $('again').disabled=false;
+ $('again').textContent=game.index>=game.target?'새 연습 시작':'다음 문제';
+ $('finishText').textContent+='\n성장 보상 +1 XP';
+ if(game.index<game.target){
+   pendingNext=setTimeout(()=>{pendingNext=null;if(game&&game.completed)requestProblem(false);},900);
+ }
+}
+$('random').onclick=()=>requestProblem(true);
+$('skip').onclick=()=>requestProblem(false);
+$('again').onclick=()=>requestProblem(false);
+$('resetStats').onclick=()=>{if(confirm('이 기기에 저장된 학습 기록과 캐릭터 성장을 초기화할까요?')){stats={xp:0,completed:0,mistakes:0};saveStats();updateProfile();}};
+updateProfile();
+requestProblem(true);
 
 </script>
 </body>
